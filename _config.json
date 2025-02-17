@@ -1,0 +1,30 @@
+{
+    
+    "llama7b_chat_hf" : {
+        "model_path": "../fine-tuning/base_models/Llama-2-7b-chat-hf",
+        "prompt_token_cost": 0.0,
+        "response_token_cost": 0.0,
+        "temperature": 0,
+        "top_k": 10,
+        "max_tokens": 16,
+        "context_length" : 4096
+    },
+    "llama13b_chat_hf" : {
+        "model_path": "../fine-tuning/base_models/Llama-2-13b-chat-hf",
+        "prompt_token_cost": 0.0,
+        "response_token_cost": 0.0,
+        "temperature": 0,
+        "top_k": 10,
+        "max_tokens": 16,
+        "context_length" : 4096
+    },
+    "gemma-2b-it" : {
+        "model_path": "../fine-tuning/base_models/gemma-2b-it",
+        "prompt_token_cost": 0.0,
+        "response_token_cost": 0.0,
+        "temperature": 0,
+        "top_k": 10,
+        "max_tokens": 16,
+        "context_length" : 4096
+    }
+}
