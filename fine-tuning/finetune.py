@@ -1,7 +1,12 @@
 import os
+# change the cache appropriately
+# cache_path = "/NS/llm-1/nobackup/bishwa/huggingface_hub_cache"
+# os.environ['HF_HOME'] = cache_path 
+os.environ["WANDB_MODE"] = "offline"
 import torch
 import wandb
 import gc
+from accelerate import Accelerator
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -31,12 +36,22 @@ if __name__=="__main__":
     #dataset = load_dataset(dataset_name, split="train")
 
 
+    # print(torch.cuda.device_count())
+    # print(torch.cuda.device_ids())
+    # for i in range(torch.cuda.device_count()):
+    #     print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+
     args = get_args()
 
     # Enable fp16/bf16 training (set bf16 to True with an A100)
     fp16 = False
     bf16 = False
-    device_map = "auto" # device_map = {"": 0}
+    current_device = Accelerator().process_index
+    print(current_device)
+    device_map = {"": current_device}
+
+    # device_map = "auto" # device_map = {"": 0}
+    # device_map={'':torch.cuda.current_device()}
 
     # Load tokenizer and model with QLoRA configuration
     compute_dtype = getattr(torch, args.bnb_4bit_compute_dtype)
@@ -59,18 +74,18 @@ if __name__=="__main__":
             print("Using bfloat16 for training")
             print("=" * 80)
 
-    # Load base model
-    model = AutoModelForCausalLM.from_pretrained(
-        # args.model_name,
-        f"{args.model_path}",
-        device_map=device_map
-    )
-    model.config.use_cache = False
-    model.config.pretraining_tp = 1
+    # # Load base model
+    # model = AutoModelForCausalLM.from_pretrained(
+    #     # args.model_name,
+    #     f"{args.model_path}",
+    #     device_map=device_map
+    # )
+    # model.config.use_cache = False
+    # model.config.pretraining_tp = 1
 
 
-    print_trainable_parameters(model)
-    count_trainable_params(model)
+    # print_trainable_parameters(model)
+    # count_trainable_params(model)
     
 
     # Load base model
@@ -126,7 +141,7 @@ if __name__=="__main__":
     os.environ["WANDB_WATCH"] = "all"
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     # use your own api
-    os.environ["WANDB_API_KEY"]="your api key"
+    os.environ["WANDB_API_KEY"]="cd8d79cbe96f9d1e1d5fbf1b4829ee38e3e2f76f"
     run_name = f"finetuning | {args.model_path.split('/')[-1]}  | {today.strftime('%d-%b-%Y')}"
     wandb.init(project=wandb_project_name)
     wandb.run.name = run_name
@@ -142,6 +157,7 @@ if __name__=="__main__":
         num_train_epochs=args.num_train_epochs,
         per_device_train_batch_size=args.per_device_train_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
+        gradient_checkpointing=args.gradient_checkpointing,
         optim=args.optim,
         logging_steps=args.logging_steps,
         learning_rate=args.learning_rate,
@@ -188,8 +204,8 @@ if __name__=="__main__":
     # Train model
     trainer.train()
     # Store model weights after training
-    os.system(f"rm -r {args.model_path_fine_tuned}")
-    trainer.save_model(f"{args.model_path_fine_tuned}/finetuned_weights")
+    # os.system(f"rm -r {args.model_path_fine_tuned}")
+    # trainer.save_model(f"{args.model_path_fine_tuned}/finetuned_weights")
 
     # release memory
     model = None
@@ -197,6 +213,12 @@ if __name__=="__main__":
     trainer = None
     gc.collect()
     torch.cuda.empty_cache()
+
+
+    # mv everything to NFS
+    # os.system(f"mkdir -p {args.output_dir.replace('/tmp/', '')}")
+    # os.system(f"mv {args.output_dir}/* {args.output_dir.replace('/tmp/', '')}")
+
 
 
     """

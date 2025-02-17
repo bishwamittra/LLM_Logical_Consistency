@@ -105,7 +105,7 @@ with pd.read_csv(filename, chunksize=chunksize, nrows=args.nrows) as reader:
         data_updated.reset_index(inplace=True)
 
 
-        if(args.model_name in ["llama7b_chat_hf", "llama13b_chat_hf"]):
+        if(args.model_name in ["llama7b_chat_hf", "llama13b_chat_hf", "llama70b_chat_hf"]):
             data['prompt_base_query'] = data['prompt_base_query'].apply(lambda x:
                 f"<s><<SYS>>You are a helpful assistant. Always follow the intstructions precisely and output the response exactly in the requested format.<</SYS>>\n\n[INST] {x} [/INST]"
             )

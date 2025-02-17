@@ -168,7 +168,7 @@ def get_dataset(filenames: str,
         raise ValueError("No filename provided")
     assert len(filenames) == len(query_types), "Number of filenames and query types should be the same"
     for i, filename in enumerate(filenames):
-        assert query_types[i] in filename
+        assert query_types[i] in filename or query_types[i] in ['exists_forall', 'syllogism'], f"Query type {query_types[i]} not supported for filename {filename}"
 
     result = {
         "prompt": []
@@ -176,25 +176,68 @@ def get_dataset(filenames: str,
     # sys_instruction = "<<SYS>>\nClassify the query as Yes or No.\n<</SYS>>\n\n"
     sys_instruction = ""
     for filename, query_type in zip(filenames, query_types):
-        df = pd.read_csv(filename, nrows=nrows)
+        df = pd.read_csv(filename)
         df = df[df['use_context'] == True] # only get prompts with context
+        if df.shape[0] > nrows:
+            df = df.sample(n=nrows, random_state=42)
         newline = "\n"
         if(query_type == "1c"):
             base_query_column = 'prompt_base_query'
             negation_query_column = 'prompt_negation_query'
+
             if("Llama" in model_path):
                 df[base_query_column] = df[base_query_column].apply(lambda x: f"<s>[INST]{sys_instruction}{x.replace('[NEWLINE]', newline)}[/INST] Yes</s>")
                 df[negation_query_column] = df[negation_query_column].apply(lambda x: f"<s>[INST]{sys_instruction}{x.replace('[NEWLINE]', newline)}[/INST] No</s>")
+            
             elif("gemma" in model_path):
-                df[base_query_column] = df[base_query_column].apply(lambda x: f"<bos><start_of_turn>user\n{x.replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\nYes <end_of_turn>")
-                df[negation_query_column] = df[negation_query_column].apply(lambda x: f"<bos><start_of_turn>user\n{x.replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\nNo <end_of_turn>")
+                df[base_query_column] = df.apply(lambda x: f"<bos><start_of_turn>user\n{x[base_query_column].replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\nYes, because {x[base_query_column].replace('[NEWLINE]', newline).split(newline)[-1]} is present in the context.<end_of_turn>", axis=1)
+                df[negation_query_column] = df.apply(lambda x: f"<bos><start_of_turn>user\n{x[negation_query_column].replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\nNo, because {x[negation_query_column].replace('[NEWLINE]', newline).split(newline)[-1]} is absent in the context.<end_of_turn>", axis=1)
 
+            print(f"Inlcuding simple positive and negative query: {df.shape[0]*2}")
             for i in range(len(df)):
                 result["prompt"].append(df[base_query_column].iloc[i])
                 result["prompt"].append(df[negation_query_column].iloc[i])
-            
+
+        elif(query_type in ["exists_forall", "syllogism", "i-de-morgan", "u-de-morgan"]):
+            base_query_column = 'prompt_base_query'
+            if query_type == "exists_forall":
+                other_query_column = 'prompt_negation_query'
+            elif query_type == "syllogism":
+                other_query_column = 'prompt_syl_query'
+            else:
+                other_query_column = "prompt_de-morgan_query"
+
+            ground_truth_base_column = base_query_column.replace("prompt", "ground_truth")
+            ground_truth_other_column = other_query_column.replace("prompt", "ground_truth")
+
+            if("Llama" in model_path):
+                df[base_query_column] = df.apply(lambda x: f"<s>[INST]{sys_instruction}{x[base_query_column].replace('[NEWLINE]', newline)}[/INST] {'Yes' if x[ground_truth_base_column] else 'No'}</s>", axis=1)
+                df[other_query_column] = df.apply(lambda x: f"<s>[INST]{sys_instruction}{x[other_query_column].replace('[NEWLINE]', newline)}[/INST] {'Yes' if x[ground_truth_other_column] else 'No'}</s>", axis=1)
+            elif("gemma" in model_path):
+                df[base_query_column] = df.apply(lambda x: f"<bos><start_of_turn>user\n{x[base_query_column].replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\n{'Yes' if x[ground_truth_base_column] else 'No'}<end_of_turn>", axis=1)
+                df[other_query_column] = df.apply(lambda x: f"<bos><start_of_turn>user\n{x[other_query_column].replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\n{'Yes' if x[ground_truth_other_column] else 'No'}<end_of_turn>", axis=1)
+            else:
+                raise NotImplementedError()
+
+            print(f"Inlcuding {query_type} queries: {df.shape[0]*2}")
+            for i in range(len(df)):
+                result["prompt"].append(df[base_query_column].iloc[i])
+                result["prompt"].append(df[other_query_column].iloc[i])  
+
+
 
         elif(query_type in ["2i", "2u"]):
+            num_subqueries = 2
+
+            def get_instricution_answer(row, num_subqueries, query_type):
+                verdict = "Yes" if row['ground_truth_base_query'] else "No"
+                reasoning = []
+                for i in range(num_subqueries):
+                    reasoning.append(f"{row['prompt_subquery_'+str(i+1)].replace('[NEWLINE]', newline).split(newline)[-1]} is {'present' if row['ground_truth_subquery_'+str(i+1)] else 'absent'} in the context.")
+                reasoning.append(f"Since the logical operator among subqueries is {'OR' if query_type == '2u' else 'AND'}, the answer is {verdict}.")
+
+                return f"{verdict}. {newline}{newline}{newline.join(reasoning)}"
+
             base_query_column = 'prompt_base_query'
             # subquery_1_column = 'prompt_subquery_1'
             # subquery_2_column = 'prompt_subquery_2'
@@ -205,10 +248,16 @@ def get_dataset(filenames: str,
                 # df[subquery_2_column] = df.apply(lambda x: f"<s>[INST]{sys_instruction}{x[subquery_2_column].replace('[NEWLINE]', newline)}[/INST] {'Yes' if x['ground_truth_subquery_2'] else 'No'}</s>", axis=1)
 
             elif("gemma" in model_path):
-                df[base_query_column] = df.apply(lambda x: f"<bos><start_of_turn>user\n{x[base_query_column].replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\n{'Yes' if x['ground_truth_base_query'] else 'No'} <end_of_turn>", axis=1)
+                # df[base_query_column] = df.apply(lambda x: f"<bos><start_of_turn>user\n{x[base_query_column].replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\n{'Yes' if x['ground_truth_base_query'] else 'No'} <end_of_turn>", axis=1)
+                df[base_query_column] = df.apply(lambda x: f"<bos><start_of_turn>user\n{x[base_query_column].replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\n{get_instricution_answer(x, num_subqueries, query_type)} <end_of_turn>", axis=1)
+                
                 # df[subquery_1_column] = df.apply(lambda x: f"<bos><start_of_turn>user\n{x[subquery_1_column].replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\n{'Yes' if x['ground_truth_subquery_1'] else 'No'} <end_of_turn>", axis=1)
                 # df[subquery_2_column] = df.apply(lambda x: f"<bos><start_of_turn>user\n{x[subquery_2_column].replace('[NEWLINE]', newline)}<end_of_turn>\n<start_of_turn>model\n{'Yes' if x['ground_truth_subquery_2'] else 'No'} <end_of_turn>", axis=1)
 
+            else:
+                raise NotImplementedError()
+
+            print(f"Inlcuding conjunctive and disjunctive queries: {df.shape[0]}")
             for i in range(len(df)):
                 result["prompt"].append(df[base_query_column].iloc[i])
                 # result["prompt"].append(df[subquery_1_column].iloc[i])
@@ -219,9 +268,10 @@ def get_dataset(filenames: str,
 
     result_df = pd.DataFrame(result)
     # shuffle result_df
-    result_df = result_df.sample(frac=1).reset_index(drop=True)
+    # result_df = result_df.sample(frac=1).reset_index(drop=True)
     dataset_dict = {"text": result_df["prompt"].tolist()}
     dataset = Dataset.from_dict(dataset_dict)
+    print(dataset)
     return dataset
 
 

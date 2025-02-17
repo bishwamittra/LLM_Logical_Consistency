@@ -1,18 +1,15 @@
 # 1c, 2i, 2u combined
-checkpoint_path="../fine-tuning/results_path"
+checkpoint_path="../fine-tuning/results_2024_05_11_05_49_learning_rate_2e-5_without_subqueries_2000_samples_per_query_llama13b"
 
 
 num_gpus=2
-chunksize=500
+chunksize=1000
 nrows=10000
 dataset="FB15k"
+model_name="llama13b_chat_hf"
+save_root="result_$(date +%Y_%m_%d)_after_finetuning_${model_name}_learning_rate_2e-5_without_subqueries_temperature_0_${dataset}"
 
-model_name="llama7b_chat_hf"
-# model_name="llama13b_chat_hf"
-# model_name="gemma-2b-it"
-save_root="result_$(date +%Y_%m_%d)_after_finetuning_${model_name}_learning_rate_2e-6_without_subqueries_temperature_0_${dataset}_shuffled"
-
-for checkpoint in 501 1002 1503 2004 2505 3006 3507 4008 4509 5010
+for checkpoint in 501 1002 1503 2004 2505 3006 3507
 do
     # use checkpoint
     mkdir -p result
@@ -20,7 +17,7 @@ do
 
     # restore checkpoint
     python checkpoint_restore.py \
-    --base_model_path ../fine-tuning/base_models/Llama-2-7b-chat-hf \
+    --base_model_path ../fine-tuning/base_models/Llama-2-13b-chat-hf \
     --checkpoint_path $checkpoint_path/checkpoint-$checkpoint \
     $finetuned_model_path
 

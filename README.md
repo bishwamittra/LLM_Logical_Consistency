@@ -7,7 +7,13 @@ A repository to assess and improve the logical consistency of large language mod
   pip install -r requirements.txt
   ```
 
-## Dataset
+## Download (Processed) Data
+Download and extract in the root: [Link](https://drive.google.com/file/d/19TnpWma7Ht3J_N50ZohRjnLh5dQtNxuk/view?usp=sharing)
+
+For reproducibility of dataset preparation, the steps are the following.
+
+
+### 1. KG Dataset
 - Clone Query2Box repo to get dataset FB15k and NELL
     ```
     git clone https://github.com/hyren/query2box.git
@@ -31,14 +37,8 @@ A repository to assess and improve the logical consistency of large language mod
     Dataset is stored inside `query2box/data`.
 
 
-## LLMs
-- Get the LLMs from hugginface and store locally
-    ```
-    cd fine-tuning
-    python download_model.py
-    ```
 
-## Logic Fact Checking Dataset Preparation
+### 2. Logic Fact Checking Dataset Preparation
 - Data process. 
     - Step 1: map entity and relation id to names. 
     - Step 2: Context creation by running BFS and find flipped entity.
@@ -53,7 +53,17 @@ A repository to assess and improve the logical consistency of large language mod
     cd prompt_generation
     bash todo.sh
     cp result/exp*/*.csv ../data_optimized/prompts 
+
+
+
+## LLMs
+- Get the LLMs from hugginface and store locally
     ```
+    cd fine-tuning
+    python download_model.py
+    ```
+
+
 
 ## Consistency Assessment
 - Before fine-tuning
@@ -69,7 +79,7 @@ A repository to assess and improve the logical consistency of large language mod
     ```
 
 ## Fine-tuning
-- Update wandb api key in line 132 in `fine-tuning/finetune.py`
+- Update wandb api key in `fine-tuning/finetune.py`
 - For fine-tuning run following commandas
     ```
     cd fine-tuning
