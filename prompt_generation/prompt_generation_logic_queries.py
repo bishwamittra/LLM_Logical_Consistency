@@ -33,7 +33,7 @@ model_name = args.model_name
 
 
 config = None
-with open("../_config.json") as f:
+with open("../config.json") as f:
     config = json.load(f)
 if(config == None):
     quit()

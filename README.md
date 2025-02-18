@@ -53,11 +53,11 @@ For reproducibility of dataset preparation, the steps are the following.
     cd prompt_generation
     bash todo.sh
     cp result/exp*/*.csv ../data_optimized/prompts 
-
+    ```
 
 
 ## LLMs
-- Get the LLMs from hugginface and store locally
+- Get the LLMs from hugginface and store locally (update [config.json](config.json) file)
     ```
     cd fine-tuning
     python download_model.py
