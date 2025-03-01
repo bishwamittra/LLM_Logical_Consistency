@@ -1,8 +1,11 @@
 import argparse
 import os
-import json
 import requests
 from openai import OpenAI
+import pandas as pd
+import json
+from IPython.display import Image, display
+
 
 # Set up argument parsing
 parser = argparse.ArgumentParser(description="Process a file for OpenAI API batch request.")
@@ -15,21 +18,12 @@ file_path = args.file_path
 api_key = args.api_key
 
 """# Read data"""
-
-import pandas as pd
-
-
 df=pd.read_csv(file_path)
 df.head()
 
 # Commented out IPython magic to ensure Python compatibility.
 # make sure you have the latest version of the SDK available to use the Batch API
 # %pip install openai --upgrade
-
-import json
-from openai import OpenAI
-import pandas as pd
-from IPython.display import Image, display
 
 api_key= api_key
 
