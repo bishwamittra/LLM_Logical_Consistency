@@ -27,14 +27,14 @@ def create_few_shot_prompt(input_text, prompt_type='few_shot'):
 
 def create_cot_prompt(input_text, query_type='simple'):
 
-    # Step 1: Add [INST] tag before "Consider the context..."
+    # Aadd [INST] tag before "Consider the context..."
     input_text = '[INST] ' + input_text
 
-    # Step 2: Add [[/INST]] tag at the end of the text
+    # add [[/INST]] tag at the end of the text
     input_text += ' [/INST]'
 
     if (query_type=='simple'):
-    # Step 3: Define the required suffix
+    # define the required suffix
       suffix = """<<SYS>>You are a helpful assistant. Always follow the instructions precisely and output the response exactly in the requested format.<</SYS>>[NEWLINE][NEWLINE][INST] Consider the context as a set of triplets where entries are separated by '|' symbol. Answer question according to the context.[NEWLINE][NEWLINE]Hartlepool | administrative children reverse | County Durham[NEWLINE]County Durham | administrative parent reverse | Darlington[NEWLINE]County Durham | contains reverse | England[NEWLINE]County Durham | containedby | England[NEWLINE]Hartlepool | containedby | County Durham[NEWLINE]County Durham | containedby reverse | Darlington[NEWLINE]County Durham | second level division of | England[NEWLINE]County Durham | contains | Darlington[NEWLINE]Hartlepool | contains reverse | County Durham[NEWLINE]County Durham | second level divisions reverse | England[NEWLINE]County Durham | contains | Durham University[NEWLINE]County Durham | administrative children | Darlington[NEWLINE]Hartlepool | administrative parent | County Durham[NEWLINE]County Durham | containedby reverse | Durham University[NEWLINE][NEWLINE][NEWLINE]Do not add additional text. Is the following triplet FACTUALLY CORRECT? Answer with Yes or No.[NEWLINE][NEWLINE]Hartlepool | contains reverse | County Durham [/INST][NEWLINE]The provided triplet 'Hartlepool | contains reverse | County Durham' appears in the context on the ninth line. The answer is Yes.[NEWLINE][NEWLINE][INST] Consider the context as a set of triplets where entries are separated by '|' symbol. Answer question according to the context.[NEWLINE][NEWLINE]Hartlepool | administrative children reverse | County Durham[NEWLINE]County Durham | administrative parent reverse | Darlington[NEWLINE]County Durham | contains reverse | England[NEWLINE]County Durham | containedby | England[NEWLINE]Hartlepool | containedby | County Durham[NEWLINE]County Durham | containedby reverse | Darlington[NEWLINE]County Durham | second level division of | England[NEWLINE]County Durham | contains | Darlington[NEWLINE]Hartlepool | contains reverse | County Durham[NEWLINE]County Durham | second level divisions reverse | England[NEWLINE]County Durham | contains | Durham University[NEWLINE]County Durham | administrative children | Darlington[NEWLINE]Hartlepool | administrative parent | County Durham[NEWLINE]County Durham | containedby reverse | Durham University[NEWLINE][NEWLINE][NEWLINE]Do not add additional text. Is the following triplet FACTUALLY CORRECT? Answer with Yes or No.[NEWLINE][NEWLINE]Hartlepool | contains reverse | Cottam, East Riding of Yorkshire [/INST][NEWLINE]The provided triplet 'Hartlepool | contains reverse | Cottam, East Riding of Yorkshire' does not appear in any line of the context. The answer is No.[NEWLINE][NEWLINE]"""
     elif (query_type=='complex'):
      suffix = """<<SYS>>You are a helpful assistant. Always follow the instructions precisely and output the response exactly in the requested format.<</SYS>>[NEWLINE][NEWLINE]"""
@@ -74,9 +74,6 @@ def remove_new_line(text):
   return text
 
 """# Reading the data
-
-
-
 """
 
 import pandas as pd
