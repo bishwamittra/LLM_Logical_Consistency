@@ -1,8 +1,6 @@
 import argparse
 
 # Set up argument parsing
-parser = argparse.ArgumentParser(description="Process a file for OpenAI API batch request.")
-
 parser.add_argument("file_path", type=str, help="Path to the input file in csv format")
 
 
