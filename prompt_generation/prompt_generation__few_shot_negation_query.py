@@ -1,4 +1,7 @@
 import argparse
+# This script is to generate, zero-shot, few-shot, chain of thoughts prompts
+# First run : python prompt_generation_negation_query.py ../data_optimized/1c_data_final_${dataset}_test_2.csv --context_length 1000 --nrows $nrows
+# Then use the output file as input to this script, as an example for FB15K the input file for the script will be ../data_optimized/1c_data_final_FB15K_test_2.csv 
 
 # Set up argument parsing
 parser.add_argument("file_path", type=str, help="Path to the input file in csv format")
