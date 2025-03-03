@@ -1,3 +1,3 @@
 # Baseline Script
 
-This Python script, generates predictions about simple and complex claimns using the **MiniCheck** model, and outputs the results into a CSV file.
+This Python script, generates predictions about simple and complex claims using the **MiniCheck** model, and outputs the results into a CSV file.
