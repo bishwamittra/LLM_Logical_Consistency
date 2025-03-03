@@ -10,7 +10,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 nltk.download('punkt_tab')
 nltk.download('punkt')
 
-def predict(claim, claim_1, claim_2, doc, doc1, doc2):
+def predict_complex(claim, claim_1, claim_2, doc, doc1, doc2):
     start_time = time.time()
     scorer = MiniCheck(model_name='roberta-large', cache_dir='./ckpts')
     pred_label, raw_prob, _, _ = scorer.score(docs=[doc, doc1, doc2], claims=[claim, claim_1, claim_2])
