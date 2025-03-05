@@ -4,5 +4,4 @@ This Python script, generates predictions about simple and complex claims using 
 
 ## How to use
 
-python base_line_script.py --input_file input_file.csv --output_file output.csv
-
+python base_line_script.py <input_file.csv> <output_file.csv>
