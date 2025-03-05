@@ -6,7 +6,7 @@ import pandas as pd
 import json
 from IPython.display import Image, display
 
-
+# This code is to be updated to the last version of code used to generate GPT-4o mini results
 # Set up argument parsing
 parser = argparse.ArgumentParser(description="Process a file for OpenAI API batch request.")
 
