@@ -6,7 +6,6 @@ import time
 from minicheck.minicheck import MiniCheck
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 nltk.download('punkt_tab')
 nltk.download('punkt')
 
@@ -15,7 +14,7 @@ def separate_context_and_question(text):
     question = f"{split_text[-3]} {split_text[-1]}"
     context = "[NEWLINE]".join(split_text[:-3]).strip()
     return question, context
-
+    
 def remove_new_line(text):
     return text[len("[NEWLINE][NEWLINE]"): ] if text.startswith("[NEWLINE][NEWLINE]") else text
 
