@@ -2,7 +2,8 @@ import argparse
 import os
 # This script is to generate, zero-shot, few-shot, chain of thoughts prompts
 # First run : python prompt_generation_negation_query.py ../data_optimized/1c_data_final_${dataset}_test_2.csv --context_length 1000 --nrows $nrows
-# Then use the previous output file as input to this script, for example in this case the input file will be called 1c_prompt_${dataset}_test_2.csv 
+# Then use the previous output file as input arg to this script, for example in this case the input file will be called 1c_prompt_${dataset}_test_2.csv
+# And the generated output file name will be 1c_prompt_${dataset}_test_2_CoT.csv 
 
 # Set up argument parsing
 parser.add_argument("file_path", type=str, help="Path to the input file in csv format")
@@ -99,7 +100,6 @@ def remove_new_line(text):
       text = text[len("[NEWLINE][NEWLINE]"):]
   return text
     
-
 """# Reading the data"""
 import pandas as pd
 df=pd.read_csv(file_path)
