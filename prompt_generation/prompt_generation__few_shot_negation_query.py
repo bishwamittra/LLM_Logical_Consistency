@@ -6,8 +6,6 @@ import os
 
 # Set up argument parsing
 parser.add_argument("file_path", type=str, help="Path to the input file in csv format")
-
-
 args = parser.parse_args()
 file_path = args.file_path
 
@@ -50,7 +48,6 @@ Hartlepool | contains reverse | Cottam, East Riding of Yorkshire [/INST][NEWLINE
         prefix = """<<SYS>>You are a helpful assistant. Always follow the instructions precisely and output the response exactly in the requested format. <</SYS>>[NEWLINE][NEWLINE]"""  
     output_text = prefix + '[INST] ' + input_text + ' [/INST]'
     return output_text.replace('[NEWLINE]', '\n')
-
 
 def create_cot_prompt(input_text, query_type='simple'):
     prefix = """[NEWLINE][NEWLINE][INST] Consider the context as a set of triplets where entries are separated by '|' symbol. Answer question according to the context.[NEWLINE][NEWLINE]
@@ -103,22 +100,19 @@ def remove_new_line(text):
   return text
     
 
-"""# Reading the data
-"""
-
+"""# Reading the data"""
 import pandas as pd
 df=pd.read_csv(file_path)
 df=df[df['use_context']==True]
 df=df.head(5000)
 
 """# Applying the functions"""
-
 #df['question_positive']=df['prompt_base_query'].apply(lambda row: separate_context_and_question(row)[0])
 #df['question_negative']=df['prompt_negation_query'].apply(lambda row: separate_context_and_question(row)[0])
 #df['context']=df['prompt_base_query'].apply(lambda row: separate_context_and_question(row)[1]).apply(remove_new_line)
 
 # CoT call 
-suffix='_CoT' you can change it according to the called function , it will be used in the output file name
+suffix='_CoT' you can change it according to the called function, it will be used later in the output file name
 df['prompt_base_query'] = df.apply(lambda row: create_cot_prompt(row['prompt_base_query']), axis=1)
 df['prompt_negation_query'] = df.apply(lambda row: create_cot_prompt(row['prompt_negation_query']), axis=1)
 
@@ -126,7 +120,6 @@ df['prompt_negation_query'] = df.apply(lambda row: create_cot_prompt(row['prompt
 #print(df['prompt_base_query'][1])
 
 df['prompt_base_query']=df['prompt_base_query'].apply(lambda row: row.replace("\n","[NEWLINE]"))
-
 df['prompt_negation_query']=df['prompt_negation_query'].apply(lambda row: row.replace("\n","[NEWLINE]"))
 
 # Save the file 
