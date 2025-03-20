@@ -112,7 +112,7 @@ df=df.head(5000)
 #df['context']=df['prompt_base_query'].apply(lambda row: separate_context_and_question(row)[1]).apply(remove_new_line)
 
 # CoT call 
-suffix='_CoT' you can change it according to the called function, it will be used later in the output file name
+suffix='_CoT' # you can change it according to the called function, it will be used later in the output file name
 df['prompt_base_query'] = df.apply(lambda row: create_cot_prompt(row['prompt_base_query']), axis=1)
 df['prompt_negation_query'] = df.apply(lambda row: create_cot_prompt(row['prompt_negation_query']), axis=1)
 
